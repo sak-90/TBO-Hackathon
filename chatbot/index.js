@@ -9,56 +9,43 @@ const whatsapp = new Client({
 const fetchData = async (city) => {
   const data = await axios.get(
     `http://localhost:5000/hospital/getHospitals?cityName=${city}`
-    );
-    // console.log(data);
-    return data;
-  };
-  
-  // whatsapp
-  whatsapp.on("qr", (qr) => {
-    qrcode.generate(qr, {
-      small: true,
-    });
+  );
+  // console.log(data);
+  return data;
+};
+
+// whatsapp
+whatsapp.on("qr", (qr) => {
+  qrcode.generate(qr, {
+    small: true,
   });
-  
-  whatsapp.on("ready", async() => {
-    console.log("Client is ready!");
-  });
-  
-  whatsapp.on("message", async (message) => {
-    const chat = await message.getChat();
-    // const user = chat
-    let text = message.body;
-    if (chat.name == "ERROR_401#") {
-      // message.reply(`text: ${text}`);
-      if (text.startsWith("/city")) {
-        let city = text.slice(6);
-        console.log(city);
-        try {
-          const hospitals = await fetchData(city);
-          console.log(hospitals);
-          if (hospitals == null) {
+});
+
+whatsapp.on("ready", async () => {
+  console.log("Client is ready!");
+});
+
+whatsapp.on("message", async (message) => {
+  const chat = await message.getChat();
+  let text = message.body;
+  if (chat.name == "ERROR_401#") {
+    if (text.startsWith("/city")) {
+      let city = text.slice(6);
+      console.log(city);
+      try {
+        const { data } = await fetchData(city);
+        console.log(data);
+        if (data == null) {
           message.reply(
             `No hospital service in ${city}. Please try again later.`
           );
         } else {
-          const hospitalsList = new List(
-            [
-              {
-                title: `List of hospitals in ${city}`,
-                rows: hospitals.map((hospital, i) => ({
-                  id: hospital.hospitalName,
-                  title: hospital.hospitalName,
-                })),
-              },
-            ],
-            "Please select a hospital"
-          );
-
-          message.reply(hospitalsList);
+          message.reply(`
+            ${data.map((hospital, i) => `${i}: ${hospital.hospitalName} \n`)}
+            `);
         }
       } catch (error) {
-        message.reply("Error fetching hospital data. Please try again later.");
+        message.reply(`Error: ${error}. Please try again later.`);
         console.error(error);
       }
     } else {
