@@ -13,7 +13,8 @@ const HospitalForm = () => {
     },
   ]);
 
-  const addDepartment = () => {
+  const addDepartment = (event) => {
+    event.preventDefault();
     setDepartments([...departments, { name: "", doctors: [] }]);
   };
 
@@ -49,6 +50,7 @@ const HospitalForm = () => {
       })),
     };
 
+    console.log(formValue);
     await axios
       .post("http://localhost:5000/hospital/addHospital", formValue)
       .then((response) => {
@@ -57,8 +59,6 @@ const HospitalForm = () => {
       .catch((err) => {
         console.log(err);
       });
-
-    console.log(formValue);
   };
 
   return (
@@ -132,7 +132,7 @@ const HospitalForm = () => {
                   htmlFor="location"
                   className="block mb-2 text-sm font-medium text-white"
                 >
-                  Location
+                  City Name
                 </label>
                 <input
                   type="text"
@@ -171,8 +171,8 @@ const HospitalForm = () => {
               </button>
               {departments.map((department, departmentIndex) => {
                 return (
-                  <>
-                    <div key={departmentIndex}>
+                  <div key={departmentIndex}>
+                    <div>
                       <div className="block text-sm font-medium mt-6 text-white mb-2">
                         Department {departmentIndex + 1} :-
                       </div>
@@ -197,7 +197,7 @@ const HospitalForm = () => {
                         <div key={doctorIndex}>
                           <label
                             htmlFor={`doctorName${doctorIndex}`}
-                            className="block mb-2 text-sm font-medium text-white"
+                            className="block mb-2 mt-5 text-sm font-medium text-white"
                           >
                             Doctor Name
                           </label>
@@ -355,12 +355,12 @@ const HospitalForm = () => {
                     })}
                     <button
                       type="button"
-                      className="text-gray-900 block bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                      className="text-gray-900 block mt-5 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
                       onClick={() => addDoctor(departmentIndex)}
                     >
                       Add Doctor +
                     </button>
-                  </>
+                  </div>
                 );
               })}
               <button

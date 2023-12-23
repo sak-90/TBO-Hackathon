@@ -1,11 +1,12 @@
 import React from "react";
+import Image from "next/image";
 
 const Details = () => {
   return (
     <div>
       <section className="pt-14 bg-gray-900 text-white">
         <div className="flex flex-col items-center justify-center px-6 mx-auto md:h-full py-0">
-          {/* <img className="h-36 md:h-56 m-6" src="/img/cover.png" alt="logo" /> */}
+          <img className="h-36 md:h-56 m-6 rounded-lg" src="/cover.jpg" alt="logo" />
           <div className="w-full  rounded-lg shadow border sm:max-w-md xl:p-0 bg-gray-800 border-gray-700">
             <div className="p-6 space-y-3 md:space-y-5 sm:p-8">
               <h1 className="text-xl font-bold leading-tight tracking-tight  md:text-2xl text-white">
