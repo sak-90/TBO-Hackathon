@@ -7,6 +7,6 @@ import {
 const hospitalRouter = Router();
 
 hospitalRouter.post("/addHospital", addHospitalController);
-hospitalRouter.get("/getHospitals/:cityName", getHospitalsController);
+hospitalRouter.get("/getHospitals", getHospitalsController);
 
 export default hospitalRouter;

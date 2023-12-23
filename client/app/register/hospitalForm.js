@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import axios from "axios";
+
 const HospitalForm = () => {
   const onWheel = (e) => {
     e.target.blur();
@@ -32,8 +34,7 @@ const HospitalForm = () => {
     const formValue = {
       hospitalName: formData.get("hospitalName"),
       email: formData.get("email"),
-      phone: formData.get("phone"),
-      location: formData.get("location"),
+      cityName: formData.get("location"),
       pincode: formData.get("pincode"),
       departments: departments.map((department, departmentIndex) => ({
         name: formData.get(`departmentName${departmentIndex}`),
@@ -47,6 +48,16 @@ const HospitalForm = () => {
         })),
       })),
     };
+
+    await axios
+      .post("http://localhost:5000/hospital/addHospital", formValue)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     console.log(formValue);
   };
 

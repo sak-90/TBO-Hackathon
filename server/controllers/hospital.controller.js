@@ -5,25 +5,31 @@ import Doctor from "../models/doctor.model.js";
 
 const addHospitalController = async (req, res) => {
   try {
-    const { cityName, departments } = req.body;
+    const { hospitalName, cityName, email, pincode, departments } = req.body;
     let city = await City.findOne({ city: cityName });
 
     if (!city) {
       city = new City({ city: cityName, hospitals: [] });
     }
     const hospital = new Hospital({
-      hospitalName: req.body.hospitalName,
+      hospitalName: hospitalName,
+      email: email,
+      pincode: pincode,
       departments: [],
     });
+    await hospital.save();
     for (const departmentData of departments) {
-      const { departmentName, doctors } = departmentData;
+      const { name, doctors } = departmentData;
 
-      const department = new Department({ departmentName, doctors: [] });
+      const department = new Department({ departmentName: name, doctors: [] });
+      await department.save();
 
       for (const doctorData of doctors) {
-        const { doctorName, availability } = doctorData;
+        const { name, weekends } = doctorData;
 
-        const doctor = new Doctor({ doctorName, availability });
+        const doctor = new Doctor({ doctorName: name, weekends });
+
+        await doctor.save();
 
         department.doctors.push(doctor);
       }
@@ -34,7 +40,6 @@ const addHospitalController = async (req, res) => {
     city.hospitals.push(hospital);
 
     const savedCity = await city.save();
-
     res.status(200).json(savedCity);
   } catch (error) {
     console.error(`Error adding hospital: ${error}`);
@@ -44,7 +49,7 @@ const addHospitalController = async (req, res) => {
 
 const getHospitalsController = async (req, res) => {
   try {
-    const cityName = req.params.cityName;
+    const cityName = req.query.cityName;
 
     const city = await City.findOne({ city: cityName })
       .populate({
