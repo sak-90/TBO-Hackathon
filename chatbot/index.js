@@ -14,7 +14,7 @@ const fetchData = async (city) => {
 };
 function specificUser(user) {
   return (
-     user == "ERROR_401#" 
+    user == "ERROR_401#"
   );
 }
 
@@ -103,7 +103,7 @@ whatsapp.on("message", async (message) => {
           if (
             !isNaN(selectedDepartmentIndex) &&
             selectedDepartmentIndex >= 0 &&
-            selectedDepartmentIndex < hospitalData.departments.length
+            selectedDepartmentIndex < formData.hospital.departments.length
           ) {
             step = 4;
             formData.departmentIndex = selectedDepartmentIndex;
@@ -130,7 +130,8 @@ whatsapp.on("message", async (message) => {
             !isNaN(selectedDoctorIndex) &&
             selectedDoctorIndex >= 0 &&
             selectedDoctorIndex <
-              hospitalData.departments[formData.departmentIndex].doctors.length
+              formData.hospital.departments[formData.departmentIndex].doctors
+                .length
           ) {
             step = 5;
             formData.doctorIndex = selectedDoctorIndex;
@@ -158,13 +159,13 @@ whatsapp.on("message", async (message) => {
           ) {
             step = 6;
             formData.day = days[selectedDayIndex];
-            const formattedData = `Please review the information you've entered:\n
-              Hospital: ${formData.hospitalName}\n
-              Department: ${formData.departmentName}\n
-              Doctor: ${formData.doctorName}\n
-              Appointment Day: ${formData.day}\n
-
-              Is this information correct?\n
+            const formattedData =
+              `Please review the information you've entered:\n
+              -> Hospital: ${formData.hospitalName}\n
+              -> Department: ${formData.departmentName}\n
+              -> Doctor: ${formData.doctorName}\n
+              -> Appointment Day: ${formData.day}\n` +
+              `\nIs this information correct?\n
               1. Yes, it's correct.\n
               2. No, I need to make changes.`;
             message.reply(formattedData);
@@ -174,27 +175,27 @@ whatsapp.on("message", async (message) => {
             );
           }
           break;
-          case 6: {
-            // Handle confirmation and proceed to payment or restart
-            const confirmation = message.body;
-            if (confirmation === "1") {
-              message.reply("Navigating to payment...");
-              // Implement payment logic here
-            } else if (confirmation === "2") {
-              message.reply("Restarting the form filling process...");
-              step = 1;
-              formData = {};
-            } else {
-              message.reply(
-                "Invalid response. Please reply with 1 for correct or 2 to make changes."
-              );
-            }
-            break;
+        case 6: {
+          // Handle confirmation and proceed to payment or restart
+          const confirmation = message.body;
+          if (confirmation === "1") {
+            message.reply("Navigating to payment...");
+            // Implement payment logic here
+          } else if (confirmation === "2") {
+            message.reply("The form has reset now, please start by entering a city using /city [city name]");
+            step = 1;
+            formData = {};
+          } else {
+            message.reply(
+              "Invalid response. Please reply with 1 for correct or 2 to make changes."
+            );
           }
+          break;
+        }
         default:
-        message.reply(
-          "Sorry, I'm not sure what to do next. Please try starting over."
-        );
+          message.reply(
+            "Sorry, I'm not sure what to do next. Please try again later."
+          );
       }
     } catch (error) {
       console.error("Error handling message:", error);
