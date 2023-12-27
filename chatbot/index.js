@@ -7,15 +7,21 @@ const whatsapp = new Client({
 });
 
 const fetchData = async (city) => {
-  const { data } = await axios.get(
-    `http://localhost:5000/hospital/getHospitals?cityName=${city}`
-  );
-  return data;
+  try {
+    const { data } = await axios.get(
+      `http://localhost:5000/hospital/getHospitals?cityName=${city}`
+    );
+    return data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return null; // Handle city not found
+    } else {
+      throw error; // Rethrow other errors
+    }
+  }
 };
 function specificUser(user) {
-  return (
-    user == "ERROR_401#"
-  );
+  return user == "ERROR_401#";
 }
 
 // QR code
@@ -30,7 +36,7 @@ whatsapp.on("ready", async () => {
 
 let data;
 let formData = {};
-let step = 1;
+let step = -1;
 const days = [
   "Monday",
   "Tuesday",
@@ -44,6 +50,40 @@ whatsapp.on("message", async (message) => {
   if (specificUser((await message.getChat()).name)) {
     try {
       switch (step) {
+        case -1:
+          // Send initial message
+          whatsapp.sendMessage(
+            message.from,
+            `Hello there! 👋 Welcome to the cutting-edge world of our prototype hackathon chat-bot! 🤖✨` +
+              `\n🏥 Introducing our revolutionary online booking system designed exclusively for location-based hospital and doctor choices, tailored to elevate your medical tourism experience! 🌍👩‍⚕
+          
+          ` +
+              `\nGet ready to embark on a seamless journey as you explore, select, and book your preferred medical destinations and doctors with just a few clicks. 🌐💉
+          
+          ` +
+              `\nFeel free to ask any questions or provide feedback as we fine-tune and enhance this innovative tool. Your input is invaluable as we strive to create a user-friendly and efficient platform for your medical travel needs. 🚀💙
+          
+          ` +
+              `\nLet the future of medical tourism unfold at your fingertips! 🌟
+          `
+          );
+          whatsapp.sendMessage(
+            message.from,
+            `Type your name to start the bot system...`
+          );
+          step = 0;
+          break;
+        case 0:
+          // Handle name and ask location
+          formData.name = message.body;
+          formData.phone = (await message.getContact()).number;
+          whatsapp.sendMessage(
+            message.from,
+            `Hi *${formData.name}*, you can start the form filling by entering a city using */city [city name]*`
+          );
+
+          step = 1;
+          break;
         case 1:
           // Handle city selection and send hospital list
           if (message.body.startsWith("/city")) {
@@ -52,23 +92,23 @@ whatsapp.on("message", async (message) => {
 
             if (data == null) {
               message.reply(
-                `No hospital service in ${city}. Please try again later.`
+                `No hospital service in *${city}*. Please try again later.`
               );
             } else {
               step = 2;
               const formattedHospitalList = data
-                .map((hospital, i) => `${i + 1}. ${hospital.hospitalName}`)
+                .map((hospital, i) => `*${i + 1}. ${hospital.hospitalName}*`)
                 .join("\n");
 
               message.reply(
                 `Here's a list of hospitals in your area:\n` +
                   formattedHospitalList +
-                  `\nPlease reply with the **number** corresponding to the hospital you'd like to select.`
+                  `\nPlease reply with the *number* corresponding to the hospital you'd like to select.`
               );
             }
           } else {
             message.reply(
-              "Please start by entering a city using /city [city name]"
+              "Please start by entering a city using */city [city name]*"
             );
           }
 
@@ -85,10 +125,12 @@ whatsapp.on("message", async (message) => {
             formData.hospitalName = data[selectedHospitalIndex].hospitalName;
             formData.hospital = data[selectedHospitalIndex];
             const departmentList = formData.hospital.departments
-              .map((department, i) => `${i + 1}. ${department.departmentName}`)
+              .map(
+                (department, i) => `*${i + 1}. ${department.departmentName}*`
+              )
               .join("\n");
             message.reply(
-              "Which department would you like to make an appointment with?\n" +
+              "Which *department* would you like to make an appointment with?\n" +
                 departmentList
             );
           } else {
@@ -114,12 +156,12 @@ whatsapp.on("message", async (message) => {
             const doctorList = formData.hospital.departments[
               selectedDepartmentIndex
             ].doctors
-              .map((doctor, i) => `${i + 1}. ${doctor.doctorName}`)
+              .map((doctor, i) => `*${i + 1}. ${doctor.doctorName}*`)
               .join("\n");
-            message.reply("Please select a doctor:\n" + doctorList);
+            message.reply("Please select a *doctor*:\n" + doctorList);
           } else {
             message.reply(
-              "Invalid doctor selection. Please enter the number corresponding to the desired doctor you want appointment with."
+              "Invalid department selection. Please enter the number corresponding to the department."
             );
           }
           break;
@@ -140,12 +182,14 @@ whatsapp.on("message", async (message) => {
                 selectedDoctorIndex
               ].doctorName;
             const availabilityList = days
-              .map((day, i) => `${i + 1}. ${day}`)
+              .map((day, i) => `*${i + 1}. ${day}*`)
               .join("\n");
-            message.reply("Please select a day:\n" + availabilityList);
+            message.reply(
+              "Please select a *day* for the appointment:\n" + availabilityList
+            );
           } else {
             message.reply(
-              "Invalid day selection. Please enter the number corresponding to the desired day you want appointment on."
+              "Invalid doctor selection. Please enter the number corresponding to the desired doctor you want appointment with."
             );
           }
           break;
@@ -161,13 +205,23 @@ whatsapp.on("message", async (message) => {
             formData.day = days[selectedDayIndex];
             const formattedData =
               `Please review the information you've entered:\n
-              -> Hospital: ${formData.hospitalName}\n
-              -> Department: ${formData.departmentName}\n
-              -> Doctor: ${formData.doctorName}\n
-              -> Appointment Day: ${formData.day}\n` +
+              ` +
+              `-> Name: *${formData.name}*\n
+              ` +
+              `-> Contact No.: *${formData.phone}*\n
+              ` +
+              `-> Hospital: *${formData.hospitalName}*\n
+              ` +
+              `-> Department: *${formData.departmentName}*\n
+              ` +
+              `-> Doctor: *${formData.doctorName}*\n
+              ` +
+              `-> Appointment Day: *${formData.day}*\n` +
               `\nIs this information correct?\n
-              1. Yes, it's correct.\n
-              2. No, I need to make changes.`;
+              ` +
+              `1. Yes, continue with payment.\n
+              ` +
+              `2. No, want to refill the form?`;
             message.reply(formattedData);
           } else {
             message.reply(
@@ -182,7 +236,9 @@ whatsapp.on("message", async (message) => {
             message.reply("Navigating to payment...");
             // Implement payment logic here
           } else if (confirmation === "2") {
-            message.reply("The form has reset now, please start by entering a city using /city [city name]");
+            message.reply(
+              "The form has reset now, please start by entering a city using */city [city name]*"
+            );
             step = 1;
             formData = {};
           } else {
