@@ -1,8 +1,12 @@
 require('dotenv').config()
 const express=require('express')
 const app=express()
+const cors=require("cors")
+app.use(cors({
+    origin:"http://localhost:5500",
+}))
 app.use(express.json())
-app.use(express.static("public"))
+
 const stripe=require('stripe')(process.env.
     STRIPE_PRIVATE_KEY)
     const storeItems=new Map([[1,{priceInCents:10000,name:"Doctor's Appointment Fees"}],
@@ -27,9 +31,8 @@ const stripe=require('stripe')(process.env.
                 }
 
             }),
-            success_url:`${process.env.SERVER_URL}/success.html`,
-            cancel_url:`${process.env.SERVER_URL}/failure.html`,
-
+            success_url:`${process.env.CLIENT_URL}/success.html`,
+            cancel_url:`${process.env.CLIENT_URL}/failure.html`,
         })
         res.json({url:session.url})
        }
