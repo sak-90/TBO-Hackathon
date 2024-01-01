@@ -14,15 +14,20 @@ To run this project locally, follow these simple steps:
 
 2. **Navigate to Project Directory:**
 
-   ```
-   cd react-landing-page
-   ```
+   
 
 3. **Install Dependencies:**
 
    ```
    npm install
    ```
+   ```
+   npm install -D sass
+   ```
+    ```
+   npm install react-icons
+   ```
+   
 
 4. **Run the Development Server:**
 
